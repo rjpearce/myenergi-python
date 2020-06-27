@@ -1,6 +1,7 @@
 # myenergi-python
 
 This module provides an open-source implementation of the myenergy's closed API in Python.
+It is currently in the early stages of development, contributions are always welcome but it will be a fast moving target
 
 ## Recognition
 
