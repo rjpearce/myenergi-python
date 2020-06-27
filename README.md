@@ -5,7 +5,7 @@ This module provides an open-source implementation of the myenergy's closed API 
 ## Recognition
 
 This project would not have been possible without the hard work of others:
-* https://github.com/twonk/MyEnergi-App-Apia
+* https://github.com/twonk/MyEnergi-App-Api
 * https://github.com/leo389/myenergi_scripts
 
 ## Contribute
