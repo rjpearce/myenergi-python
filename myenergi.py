@@ -64,7 +64,9 @@ class myenergi:
           if isinstance(attributes, (dict)):
             for attr, value in attributes.items():
               translated[device][self.translate_attribute(attr, device)] = value
-    pprint(translated)
+          else:
+              translated[device] = attributes_list
+    return translated
 
 
 def main(): 
@@ -73,7 +75,7 @@ def main():
 
   with open('tests/fixtures/status.json') as data_file:    
     data = json.load(data_file)
-    mye.translate_response(data)
+    pprint(mye.translate_response(data))
 
 if __name__ == "__main__":
   main()
