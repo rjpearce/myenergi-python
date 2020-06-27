@@ -12,5 +12,10 @@ class TestMyEnergiClass(unittest.TestCase):
     expected_config = {'hub_serial': '12345678', 'hub_password': 'secret'}
     self.assertDictEqual(mye.config, expected_config)
 
+  def test_status(self):
+    """it should load config correctly"""
+    mye = myenergi(f'tests/fixtures/status.json')
+    mye.get_zappi_status
+
 if __name__ == '__main__':
   unittest.main()
