@@ -1,0 +1,34 @@
+---
+attributes:
+  'dat': 'date'
+  'tim': 'time'
+  'div': 'diversion_watts'
+  'ectp1': 'ct_1_watts'
+  'ectp2': 'ct_2_watts'
+  'ectt1': 'ct_1_name'
+  'ectt2': 'ct_2_name'
+  'frq': 'supply_frequency'
+  'gen': 'generated_watts'
+  'grd': 'supply_import_watts'
+  'hno': 'active_heater'
+  'pha': 'supply_phases'
+  'sno': 'serial_number'
+  'sta': 'status'
+  'vol': 'supply_voltage'
+  'ht1': 'heater_1_name'
+  'ht2': 'heater_2_name'
+  'pri': 'priority'
+  'che': 'charge_added_kwh'
+  'bsm': 'boost'
+  'rbt': 'boost_time_remaining_secs'
+  'fwv': 'firmware_version'
+values:
+  'sta':
+    1: 'Paused'
+    3: 'Diverting'
+    4: 'Boost'
+    5: 'Stopped'
+  'bsm':
+    0: 'Off'
+    1: 'On'
+...

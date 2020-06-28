@@ -48,8 +48,16 @@ class myenergi:
     status_file.write(json.dumps(response.json()))
     status_file.close()
 
+  def translate_value(self, attribute, value, device):
+    if device in ('zappi', 'eddi'):
+      with open(f'translations/{device}.yaml', 'r') as translation_file:
+        translations = yaml.safe_load(translation_file.read())
+        if attribute in translations['values']:
+          return translations['values'][attribute].get(value, value)
+    return value
+
   def translate_attribute(self, attribute, device):
-    if device == 'zappi':
+    if device in ('zappi', 'harvi', 'eddi'):
       with open(f'translations/{device}.yaml', 'r') as translation_file:
         translations = yaml.safe_load(translation_file.read())
         return translations['attributes'].get(attribute, attribute)
@@ -63,7 +71,8 @@ class myenergi:
         for attributes in attributes_list:
           if isinstance(attributes, (dict)):
             for attr, value in attributes.items():
-              translated[device][self.translate_attribute(attr, device)] = value
+              tvalue = self.translate_value(attr, value, device)
+              translated[device][self.translate_attribute(attr, device)] = tvalue
           else:
               translated[device] = attributes_list
     return translated
