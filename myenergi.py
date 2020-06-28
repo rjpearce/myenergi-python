@@ -9,37 +9,36 @@ import json
 
 class zappi:
   name = ''
+  device = 'zappi'
   attributes = {}
   translated_attributes = {}
 
   def __init__(self, attributes):
     self.attributes = attributes
     self.translated_attributes = self.translate_attributes()
-    self.name = f'zappi_{attributes["sno"]}'
+    self.name = f'{self.device}_{attributes["sno"]}'
 
   def __repr__(self):
     return self.name
 
-  def translate_value(self, attribute, value, device):
-    if device in ('zappi', 'eddi'):
-      with open(f'translations/{device}.yaml', 'r') as translation_file:
-        translations = yaml.safe_load(translation_file.read())
-        if attribute in translations['values']:
-          return translations['values'][attribute].get(value, value)
+  def translate_value(self, attribute, value):
+    with open(f'translations/{self.device}.yaml', 'r') as translation_file:
+      translations = yaml.safe_load(translation_file.read())
+      if attribute in translations['values']:
+        return translations['values'][attribute].get(value, value)
     return value
 
-  def translate_attribute(self, attribute, device):
-    if device in ('zappi', 'harvi', 'eddi'):
-      with open(f'translations/{device}.yaml', 'r') as translation_file:
-        translations = yaml.safe_load(translation_file.read())
-        return translations['attributes'].get(attribute, attribute)
+  def translate_attribute(self, attribute):
+    with open(f'translations/{self.device}.yaml', 'r') as translation_file:
+      translations = yaml.safe_load(translation_file.read())
+      return translations['attributes'].get(attribute, attribute)
     return attribute
 
   def translate_attributes(self):
     translated = {}
     for attr, value in self.attributes.items():
-      tattr = self.translate_attribute(attr, 'zappi')
-      tvalue = self.translate_value(attr, value, 'zappi')
+      tattr = self.translate_attribute(attr)
+      tvalue = self.translate_value(attr, value)
       translated[tattr] = tvalue
     return translated
 
@@ -69,8 +68,6 @@ class myenergi:
       print('Hub password not found')
       raise Exception('hub_password missing from config')
   
-    
-
   def request_status(self, endpoint='*'):
     hub_serial = self.config['hub_serial']
     hub_password = self.config['hub_password']
@@ -106,7 +103,6 @@ class myenergi:
             if device in ('zappi'):
               devices.append(zappi(attributes_list[0]))
     return devices
-
 
 def main(): 
   mye = myenergi()
