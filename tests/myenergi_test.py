@@ -19,5 +19,11 @@ class TestMyEnergiClass(unittest.TestCase):
     mye = myenergi(config_file, cache_folder)
     self.assertListEqual(mye.list_devices(), ['zappi_12345678'])
 
+  def test_status(self):
+    """it should fail for bad config"""
+    config_file = f'{os.getcwd()}/tests/fixtures/config_bad.yaml'
+    with self.assertRaisesRegex(Exception, 'missing from config'):
+      myenergi(config_file)
+
 if __name__ == '__main__':
   unittest.main()
