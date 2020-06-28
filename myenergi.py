@@ -48,19 +48,19 @@ class myenergi:
   devices = []
   connect_timeout = 10
   read_timeout = 30
-  use_cache = True
   cache_folder = ''
+  base_url = ''
 
   def __init__(self, config_path=f'{os.getcwd()}/config.yaml', cache_folder=f'{os.getcwd()}/cache'):
-    self.load_config(config_path)
-    self.cache_folder = cache_folder
+    self.config = self.read_config(config_path)
     self.validate_config()
-    self.devices = self.populate_devices()
+    self.cache_folder = cache_folder
+    self.base_url = f'https://s{self.config["hub_serial"][-1]}.myenergi.net'
   
-  def load_config(self, config_path):
-    """ Loads the configuration file """
+  def read_config(self, config_path):
+    """ Read the configuration file """
     with open(config_path, 'r') as config_file:
-      self.config = yaml.safe_load(config_file.read())
+      return yaml.safe_load(config_file.read())
 
   def validate_config(self):
     """ Validate the config """
@@ -70,8 +70,7 @@ class myenergi:
       raise Exception('hub_password missing from config')
   
   def request_status(self, endpoint='*'):
-    base_url = f'https://s{hub_serial[-1]}.myenergi.net'
-    status_url = f'{base_url}/cgi-jstatus-{endpoint}'
+    status_url = f'{self.base_url}/cgi-jstatus-{endpoint}'
 
     headers = {'User-Agent': 'Wget/1.14 (linux-gnu)'}
     auth = HTTPDigestAuth(self.config['hub_serial'], self.config['hub_password'])
@@ -84,7 +83,7 @@ class myenergi:
 
   def get_all_devices(self):
     """ Returns the current API status """
-    if self.use_cache:
+    if self.config['use_cache']:
       with open(f'{self.cache_folder}/status.json') as data_file:    
         return json.load(data_file)
     return self.request_status('*')
@@ -100,13 +99,13 @@ class myenergi:
           if len(attributes_list) > 0:
             if device in ('zappi'):
               devices.append(zappi(attributes_list[0]))
-    return devices
+    self.devices = devices
 
   def list_devices(self):
     return list(map(str, self.devices))
 
 def main(): 
-  mye = myenergi()
+  mye = myenergi(True)
   for device in mye.devices:
     pprint(device.name)
     pprint(device.translated_attributes)
