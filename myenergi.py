@@ -49,9 +49,11 @@ class myenergi:
   connect_timeout = 10
   read_timeout = 30
   use_cache = True
+  cache_folder = ''
 
-  def __init__(self, config_path=f'{os.getcwd()}/config.yaml'):
+  def __init__(self, config_path=f'{os.getcwd()}/config.yaml', cache_folder=f'{os.getcwd()}/cache'):
     self.load_config(config_path)
+    self.cache_folder = cache_folder
     self.validate_config()
     self.devices = self.populate_devices()
   
@@ -65,21 +67,17 @@ class myenergi:
     if 'hub_serial' not in self.config:
       raise Exception('hub_serial missing from config')
     if 'hub_password' not in self.config:
-      print('Hub password not found')
       raise Exception('hub_password missing from config')
   
   def request_status(self, endpoint='*'):
-    hub_serial = self.config['hub_serial']
-    hub_password = self.config['hub_password']
-
     base_url = f'https://s{hub_serial[-1]}.myenergi.net'
     status_url = f'{base_url}/cgi-jstatus-{endpoint}'
 
     headers = {'User-Agent': 'Wget/1.14 (linux-gnu)'}
-    auth = HTTPDigestAuth(hub_serial, hub_password)
+    auth = HTTPDigestAuth(self.config['hub_serial'], self.config['hub_password'])
     response = requests.get(status_url, headers=headers, auth=auth, timeout=(self.connect_timeout, self.read_timeout))
     if response.status_code == 200:
-      status_file = open("status.json", "w")
+      status_file = open(f'{self.cache_folder}/status.json', 'w')
       status_file.write(json.dumps(response.json()))
       status_file.close()
       return response.json()
@@ -87,7 +85,7 @@ class myenergi:
   def get_all_devices(self):
     """ Returns the current API status """
     if self.use_cache:
-      with open('tests/fixtures/status.json') as data_file:    
+      with open(f'{self.cache_folder}/status.json') as data_file:    
         return json.load(data_file)
     return self.request_status('*')
 
@@ -103,6 +101,9 @@ class myenergi:
             if device in ('zappi'):
               devices.append(zappi(attributes_list[0]))
     return devices
+
+  def list_devices(self):
+    return list(map(str, self.devices))
 
 def main(): 
   mye = myenergi()

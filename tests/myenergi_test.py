@@ -14,8 +14,10 @@ class TestMyEnergiClass(unittest.TestCase):
 
   def test_status(self):
     """it should load config correctly"""
-    mye = myenergi(f'tests/fixtures/status.json')
-    mye.get_zappi_status
+    config_file = f'{os.getcwd()}/tests/fixtures/config_example.yaml'
+    cache_folder = f'{os.getcwd()}/tests/fixtures'
+    mye = myenergi(config_file, cache_folder)
+    self.assertListEqual(mye.list_devices(), ['zappi_12345678'])
 
 if __name__ == '__main__':
   unittest.main()
