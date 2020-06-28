@@ -10,13 +10,38 @@ import json
 class zappi:
   name = ''
   attributes = {}
+  translated_attributes = {}
 
   def __init__(self, attributes):
     self.attributes = attributes
+    self.translated_attributes = self.translate_attributes()
     self.name = f'zappi_{attributes["sno"]}'
 
   def __repr__(self):
     return self.name
+
+  def translate_value(self, attribute, value, device):
+    if device in ('zappi', 'eddi'):
+      with open(f'translations/{device}.yaml', 'r') as translation_file:
+        translations = yaml.safe_load(translation_file.read())
+        if attribute in translations['values']:
+          return translations['values'][attribute].get(value, value)
+    return value
+
+  def translate_attribute(self, attribute, device):
+    if device in ('zappi', 'harvi', 'eddi'):
+      with open(f'translations/{device}.yaml', 'r') as translation_file:
+        translations = yaml.safe_load(translation_file.read())
+        return translations['attributes'].get(attribute, attribute)
+    return attribute
+
+  def translate_attributes(self):
+    translated = {}
+    for attr, value in self.attributes.items():
+      tattr = self.translate_attribute(attr, 'zappi')
+      tvalue = self.translate_value(attr, value, 'zappi')
+      translated[tattr] = tvalue
+    return translated
 
 class myenergi:
   """ Implements the myenergi API """
@@ -69,21 +94,6 @@ class myenergi:
         return json.load(data_file)
     return self.request_status('*')
 
-  def translate_value(self, attribute, value, device):
-    if device in ('zappi', 'eddi'):
-      with open(f'translations/{device}.yaml', 'r') as translation_file:
-        translations = yaml.safe_load(translation_file.read())
-        if attribute in translations['values']:
-          return translations['values'][attribute].get(value, value)
-    return value
-
-  def translate_attribute(self, attribute, device):
-    if device in ('zappi', 'harvi', 'eddi'):
-      with open(f'translations/{device}.yaml', 'r') as translation_file:
-        translations = yaml.safe_load(translation_file.read())
-        return translations['attributes'].get(attribute, attribute)
-    return attribute
-
   def populate_devices(self):
     data = self.get_all_devices()
     devices = []
@@ -97,26 +107,12 @@ class myenergi:
               devices.append(zappi(attributes_list[0]))
     return devices
 
-  def translate_response(self, response_json):
-    translated = {}
-    for device_list in response_json:
-      for device, attributes_list in device_list.items():
-        # Ignore asn
-        if isinstance(attributes_list, (list)):
-          # Ignore devices without any attributes
-          if len(attributes_list) > 0:
-            translated[device] = {}
-            if isinstance(attributes_list[0], (dict)):
-              for attr, value in attributes_list[0].items():
-                tvalue = self.translate_value(attr, value, device)
-                translated[device][self.translate_attribute(attr, device)] = tvalue
-            else:
-              translated[device] = attributes_list
-    return translated
 
 def main(): 
   mye = myenergi()
-  pprint(mye.devices)
+  for device in mye.devices:
+    pprint(device.name)
+    pprint(device.translated_attributes)
 
 if __name__ == "__main__":
   main()
