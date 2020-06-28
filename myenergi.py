@@ -6,7 +6,6 @@ import requests
 from requests.auth import HTTPDigestAuth
 import yaml
 import json
-import simplejson
 
 class myenergi:
   """ Implements the myenergi API """
@@ -62,21 +61,35 @@ class myenergi:
         translations = yaml.safe_load(translation_file.read())
         return translations['attributes'].get(attribute, attribute)
     return attribute
-  
+
+  def list_devices(self, response_json):
+    devices = []
+    for device_list in response_json:
+      for device, attributes_list in device_list.items():
+        # Ignore asn
+        if isinstance(attributes_list, (list)):
+          # Ignore devices without any attributes
+          if len(attributes_list) > 0:
+            if 'sno' in attributes_list[0]:
+              devices.append(f'{device}_{attributes_list[0]["sno"]}')
+    return devices
+
   def translate_response(self, response_json):
     translated = {}
     for device_list in response_json:
       for device, attributes_list in device_list.items():
-        translated[device] = {}
-        for attributes in attributes_list:
-          if isinstance(attributes, (dict)):
-            for attr, value in attributes.items():
-              tvalue = self.translate_value(attr, value, device)
-              translated[device][self.translate_attribute(attr, device)] = tvalue
-          else:
+        # Ignore asn
+        if isinstance(attributes_list, (list)):
+          # Ignore devices without any attributes
+          if len(attributes_list) > 0:
+            translated[device] = {}
+            if isinstance(attributes_list[0], (dict)):
+              for attr, value in attributes_list[0].items():
+                tvalue = self.translate_value(attr, value, device)
+                translated[device][self.translate_attribute(attr, device)] = tvalue
+            else:
               translated[device] = attributes_list
     return translated
-
 
 def main(): 
   mye = myenergi()
@@ -84,7 +97,7 @@ def main():
 
   with open('tests/fixtures/status.json') as data_file:    
     data = json.load(data_file)
+    pprint(mye.list_devices(data))
     pprint(mye.translate_response(data))
-
 if __name__ == "__main__":
   main()
