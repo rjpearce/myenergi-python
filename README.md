@@ -1,7 +1,12 @@
 # myenergi-python
 
+[![codecov](https://codecov.io/gh/rjpearce/myenergi-python/branch/master/graph/badge.svg)](https://codecov.io/gh/rjpearce/myenergi-python)
+
 This module provides an open-source implementation of the myenergy's closed API in Python.
 It is currently in the early stages of development, contributions are always welcome but it will be a fast moving target
+
+If you want an API that is already working checkout this one:
+* https://github.com/ashleypittman/mec
 
 ## Recognition
 
