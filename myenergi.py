@@ -7,16 +7,19 @@ from requests.auth import HTTPDigestAuth
 import yaml
 import json
 
-class zappi:
+
+class MyEnergiDevice:
   name = ''
-  device = 'zappi'
   attributes = {}
   translated_attributes = {}
+  device = ''
 
   def __init__(self, attributes):
+    self.device = self.__class__.__name__
     self.attributes = attributes
+    self.name = f'{self.device}[{attributes["sno"]}]'
+    self.id = f'{self.device[:1]}{attributes["sno"]}'
     self.translated_attributes = self.translate_attributes()
-    self.name = f'{self.device}_{attributes["sno"]}'
 
   def __repr__(self):
     return self.name
@@ -24,14 +27,16 @@ class zappi:
   def translate_value(self, attribute, value):
     with open(f'translations/{self.device}.yaml', 'r') as translation_file:
       translations = yaml.safe_load(translation_file.read())
-      if attribute in translations['values']:
-        return translations['values'][attribute].get(value, value)
+      if 'values' in translations:
+        if attribute in translations['values']:
+          return translations['values'][attribute].get(value, value)
     return value
 
   def translate_attribute(self, attribute):
     with open(f'translations/{self.device}.yaml', 'r') as translation_file:
       translations = yaml.safe_load(translation_file.read())
-      return translations['attributes'].get(attribute, attribute)
+      if 'attributes' in translations:
+        return translations['attributes'].get(attribute, attribute)
     return attribute
 
   def translate_attributes(self):
@@ -42,7 +47,16 @@ class zappi:
       translated[tattr] = tvalue
     return translated
 
-class myenergi:
+class Harvi(MyEnergiDevice):
+  pass
+
+class Eddi(MyEnergiDevice):
+  pass
+
+class Zappi(MyEnergiDevice):
+  pass
+
+class MyEnergi:
   """ Implements the myenergi API """
   config = {}
   devices = []
@@ -50,6 +64,11 @@ class myenergi:
   read_timeout = 30
   cache_folder = ''
   base_url = ''
+  supported_devices = { 
+    'Zappi': Zappi,
+    'Harvi': Harvi,
+    'Eddi': Eddi
+   }
 
   def __init__(self, config_path=f'{os.getcwd()}/config.yaml', cache_folder=f'{os.getcwd()}/cache'):
     self.config = self.read_config(config_path)
@@ -68,6 +87,9 @@ class myenergi:
       raise Exception('hub_serial missing from config')
     if 'hub_password' not in self.config:
       raise Exception('hub_password missing from config')
+    if 'use_cache' not in self.config:
+      print('here')
+      self.config['use_cache'] = False
   
   def request_status(self, endpoint='*'):
     status_url = f'{self.base_url}/cgi-jstatus-{endpoint}'
@@ -97,15 +119,19 @@ class myenergi:
         if isinstance(attributes_list, (list)):
           # Ignore devices without any attributes
           if len(attributes_list) > 0:
-            if device in ('zappi'):
-              devices.append(zappi(attributes_list[0]))
+            if device.capitalize() in self.supported_devices.keys():
+              new_device = self.supported_devices[device.capitalize()](attributes_list[0])
+              devices.append(new_device)
+            else:
+              raise Exception(f'Unsupported device {device}')
     self.devices = devices
 
   def list_devices(self):
     return list(map(str, self.devices))
 
 def main(): 
-  mye = myenergi(True)
+  mye = MyEnergi()
+  mye.populate_devices()
   for device in mye.devices:
     pprint(device.name)
     pprint(device.translated_attributes)

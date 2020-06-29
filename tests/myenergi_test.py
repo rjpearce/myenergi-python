@@ -4,29 +4,34 @@ import os
 import unittest
 import urllib.request
 import httptest
-from myenergi import myenergi
+from myenergi import MyEnergi
 
 class TestMyEnergiClass(unittest.TestCase):
   """Test MyEnergy Class"""
 
-  def test_config_loads_correctly(self):
-    """it should load config correctly"""
-    mye = myenergi(f'{os.getcwd()}/tests/fixtures/config_cache.yaml')
+  def test_config_parses(self):
+    """it should parse config correctly"""
+    mye = MyEnergi(f'{os.getcwd()}/tests/fixtures/config_cache.yaml')
     expected_config = {
       'hub_serial': '12345678',
       'hub_password': 'secret',
-      'use_cache': True,
+      'use_cache': True
     }
     self.assertDictEqual(mye.config, expected_config)
 
-  def test_status(self):
-    """it should load config correctly"""
+  def test_fails_for_bad_config(self):
+    """it should fail for bad config"""
+    config_file = f'{os.getcwd()}/tests/fixtures/config_bad.yaml'
+    with self.assertRaisesRegex(Exception, 'missing from config'):
+      MyEnergi(config_file)
+
+  def test_parses_cached_devices(self):
+    """it should parse cached devices """
     config_file = f'{os.getcwd()}/tests/fixtures/config_cache.yaml'
     cache_folder = f'{os.getcwd()}/tests/fixtures'
-    mye = myenergi(config_file, cache_folder)
+    mye = MyEnergi(config_file, cache_folder)
     mye.populate_devices()
-    self.assertListEqual(mye.list_devices(), ['zappi_12345678'])
-
+    self.assertListEqual(mye.list_devices(), ['Zappi[12345678]', 'Harvi[12345678]'])
 
 class TestHTTPServer(httptest.Handler):
 
@@ -43,16 +48,10 @@ class TestHTTPTestMethods(unittest.TestCase):
   def test_call_response(self, ts=httptest.NoServer()):
     config_file = f'{os.getcwd()}/tests/fixtures/config_nocache.yaml'
     cache_folder = f'{os.getcwd()}/tests/fixtures'
-    mye = myenergi(config_file)
-    mye.base_url = ts.url()
+    mye = MyEnergi(config_file)
+    mye.base_url = ts.url().replace('1.0.0.127.in-addr.arpa','127.0.0.1')
     mye.populate_devices()
-    self.assertListEqual(mye.list_devices(), ['zappi_12345678'])
-
-  def test_status(self):
-    """it should fail for bad config"""
-    config_file = f'{os.getcwd()}/tests/fixtures/config_bad.yaml'
-    with self.assertRaisesRegex(Exception, 'missing from config'):
-      myenergi(config_file)
+    self.assertListEqual(mye.list_devices(), ['Zappi[12345678]', 'Harvi[12345678]'])
 
 if __name__ == '__main__':
   unittest.main()
