@@ -14,9 +14,11 @@ class MyEnergiDevice:
   attributes = {}
   translated_attributes = {}
   device = ''
+  myenergi = None
 
-  def __init__(self, attributes):
+  def __init__(self, myenergi, attributes):
     self.device = self.__class__.__name__
+    self.myenergi = myenergi
     self.attributes = attributes
     self.name = f'{self.device}[{attributes["sno"]}]'
     self.id = f'{self.device[:1]}{attributes["sno"]}'
@@ -55,7 +57,10 @@ class Eddi(MyEnergiDevice):
   pass
 
 class Zappi(MyEnergiDevice):
-  pass
+
+  def get_boost_time(self):
+   pass
+   #/cgi-boost-time-Z10077777
 
 class MyEnergi:
   """ Implements the myenergi API """
@@ -92,24 +97,28 @@ class MyEnergi:
       print('here')
       self.config['use_cache'] = False
   
-  def request_status(self, endpoint='*'):
-    status_url = f'{self.base_url}/cgi-jstatus-{endpoint}'
-
+  def api_request(self, url):
     headers = {'User-Agent': 'Wget/1.14 (linux-gnu)'}
     auth = HTTPDigestAuth(self.config['hub_serial'], self.config['hub_password'])
-    response = requests.get(status_url, headers=headers, auth=auth, timeout=(self.connect_timeout, self.read_timeout))
+    response = requests.get(url, headers=headers, auth=auth, timeout=(self.connect_timeout, self.read_timeout))
     if response.status_code == 200:
-      status_file = open(f'{self.cache_folder}/status.json', 'w')
-      status_file.write(json.dumps(response.json()))
-      status_file.close()
       return response.json()
+    else:
+      return False
+
+  def api_request_status(self):
+    response_json = self.api_request(f'{self.base_url}/cgi-jstatus-*')
+    status_file = open(f'{self.cache_folder}/status.json', 'w')
+    status_file.write(json.dumps(response_json))
+    status_file.close()
+    return response_json
 
   def get_all_devices(self):
     """ Returns the current API status """
     if self.config['use_cache']:
       with open(f'{self.cache_folder}/status.json') as data_file:    
         return json.load(data_file)
-    return self.request_status('*')
+    return self.api_request_status()
 
   def populate_devices(self):
     data = self.get_all_devices()
@@ -121,7 +130,7 @@ class MyEnergi:
           # Ignore devices without any attributes
           if len(attributes_list) > 0:
             if device.capitalize() in self.supported_devices.keys():
-              new_device = self.supported_devices[device.capitalize()](attributes_list[0])
+              new_device = self.supported_devices[device.capitalize()](self, attributes_list[0])
               devices.append(new_device)
             else:
               raise Exception(f'Unsupported device {device}')
