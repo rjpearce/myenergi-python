@@ -34,6 +34,12 @@ attributes:
   'tim': 'time'
   'vol': 'supply_voltage'
   'zmo': 'charge_mode'
+  'slt': 'boost_slot'
+  'bsh': 'boost_start_hour'
+  'bsm': 'boost_start_minute'
+  'bdh': 'boot_duration_hours'
+  'bdm': 'boot_durations_mins'
+  'bdd': 'boost_days'
 values:
   'pst':
     'A': 'Disconnected'
@@ -49,4 +55,5 @@ values:
     1: 'Fast'
     2: 'Eco'
     3: 'Eco+'
+
 ...
