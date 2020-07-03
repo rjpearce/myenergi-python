@@ -6,6 +6,7 @@ import requests
 from requests.auth import HTTPDigestAuth
 import yaml
 import json
+from pathlib import Path
 
 
 class MyEnergiDevice:
@@ -70,7 +71,7 @@ class MyEnergi:
     'Eddi': Eddi
    }
 
-  def __init__(self, config_path=f'{os.getcwd()}/config.yaml', cache_folder=f'{os.getcwd()}/cache'):
+  def __init__(self, config_path=f'{str(Path.home())}/.myenergi.yaml', cache_folder=f'{os.getcwd()}/cache'):
     self.config = self.read_config(config_path)
     self.validate_config()
     self.cache_folder = cache_folder

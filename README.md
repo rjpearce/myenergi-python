@@ -14,6 +14,39 @@ This project would not have been possible without the hard work of others:
 * https://github.com/twonk/MyEnergi-App-Api
 * https://github.com/leo389/myenergi_scripts
 
+## Setup
+
+Create a config file in ~/.myenergy.yaml
+
+```yaml
+---
+hub_serial: '12345678'
+hub_password: 'secret'
+use_cache: False
+...
+```
+
+### Settings
+
+* use_cache - True - Use the cache/status.json file from the last run instead of querying myenergi API.
+
+## Usage
+
+```python
+
+from myenergi import MyEnergi
+
+  mye = MyEnergi()
+  
+  # Query the myenergi API to obtain devices
+  mye.populate_devices()
+  
+  # Output the devices with attributes translated into human friendly wording
+  for device in mye.devices:
+    pprint(device.name)
+    pprint(device.translated_attributes)
+```
+
 ## Contribute
 
 Please do feel free to fork this module it enhance it for the benefit of everyone.
