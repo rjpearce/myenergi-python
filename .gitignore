@@ -2,3 +2,6 @@ config.yaml
 __pycache__
 .coverage
 cache/
+coverage.xml
+.vscode
+build
