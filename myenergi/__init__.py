@@ -1,5 +1,2 @@
-from .myenergi import Eddi
-from .myenergi import Harvi
-from .myenergi import MyEnergi
-from .myenergi import MyEnergiDevice
-from .myenergi import Zappi
+from .device import Device, Eddi, Harvi, Zappi
+from .client import Client
