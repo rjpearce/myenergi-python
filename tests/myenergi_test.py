@@ -45,6 +45,21 @@ class TestTranslator(unittest.TestCase):
     self.assertEqual(translator.days_from_myenergi('01010101'), expected)
     expected = 'Tue,Thu,Sat'
     self.assertEqual(translator.days_from_myenergi('00101010'), expected)
+    expected = 'None'
+    self.assertEqual(translator.days_from_myenergi('00000000'), expected)
+
+  def test_days_value_to_myenergi(self):
+    translator = myenergi.Translator('Zappi')
+    days = 'Mon,Tue,Wed,Thu,Fri,Sat,Sun'
+    self.assertEqual(translator.days_to_myenergi(days.split(',')), '01111111')
+    days = 'Mon,Wed,Fri,Sun'
+    self.assertEqual(translator.days_to_myenergi(days.split(',')), '01010101')
+    days = 'Tue,Thu,Sat'
+    self.assertEqual(translator.days_to_myenergi(days.split(',')), '00101010')
+    days = ''
+    self.assertEqual(translator.days_to_myenergi(days.split(',')), '00000000')
+    days = 'None'
+    self.assertEqual(translator.days_to_myenergi(days.split(',')), '00000000')
 
 class TestHTTPServer(httptest.Handler):
 

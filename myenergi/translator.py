@@ -22,10 +22,10 @@ class Translator:
     return ','.join(translated_days)
 
   def days_to_myenergi(self, days):
-    mydays = []
+    mydays = ['0']
     for day in self.WEEKDAYS:
       mydays.append("1" if day in days else "0")
-    return mydays.join('')
+    return ''.join(mydays)
 
   def value(self, attribute, value):
     if attribute == 'bdd':
