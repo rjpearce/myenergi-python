@@ -6,8 +6,8 @@ import urllib.request
 import httptest
 import myenergi 
 
-class TestMyEnergiClient(unittest.TestCase):
-  """Test MyEnergiClient Class"""
+class TestClient(unittest.TestCase):
+  """Test MyEnergi Client Class"""
 
   def test_config_parses(self):
     """it should parse config correctly"""
@@ -32,6 +32,15 @@ class TestMyEnergiClient(unittest.TestCase):
     mec = myenergi.Client(config_file, cache_folder)
     mec.populate_devices()
     self.assertListEqual(mec.list_devices(), ['Zappi[12345678]', 'Harvi[12345678]'])
+
+class TestTranslator(unittest.TestCase):
+  """Test MyEnergi Translator Class"""
+  
+  def test_days_value_to_myenergi(self):
+    translator = myenergi.Translator('Zappi')
+    expected = 'Mon,Tue,Wed,Thu,Fri,Sat,Sun'
+    actual = translator.days_from_myenergi('11111111')
+    self.assertEqual(expected, actual)
 
 class TestHTTPServer(httptest.Handler):
 
